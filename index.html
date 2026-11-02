@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SDGs 不塑永續-淨灘</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; overflow-x: hidden;
+      font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+      color: #15384a;
+      background: linear-gradient(#9be0f3 0%, #d6f4f4 40%, #f8e6b7 41%, #e8c98e 100%);
+    }
+    header {
+      position: relative; z-index: 5; display: flex; justify-content: space-between;
+      align-items: flex-start; gap: 16px; padding: 22px clamp(16px, 4vw, 56px);
+    }
+    .student-info { margin-bottom: 5px; font-size: 14px; font-weight: 800; color: #276477; letter-spacing: .5px; }
+    h1 { margin: 0; font-size: clamp(25px, 4vw, 42px); font-weight: 900; letter-spacing: 1px; color: #064c63; text-shadow: 1px 2px 0 #fff8; }
+    .subtitle { margin-top: 6px; font-size: 14px; color: #276477; font-weight: 600; }
+    .scoreboard {
+      display: flex; gap: 12px; align-items: center; background: #ffffffdf;
+      border: 2px solid #ffffff; border-radius: 18px; padding: 10px 16px;
+      box-shadow: 0 5px 15px #27647725; font-weight: 800; white-space: nowrap;
+    }
+    .scoreboard span { color: #e47728; font-size: 22px; }
+    .game-area {
+      position: relative; min-height: calc(100vh - 112px); overflow: hidden;
+      background:
+        radial-gradient(ellipse at 14% 17%, #ffffff70 0 2%, transparent 2.5%),
+        radial-gradient(ellipse at 80% 12%, #ffffff65 0 2%, transparent 2.5%),
+        linear-gradient(to bottom, #8bd8ed 0%, #bcebf0 17%, #e9f2d8 18%, #f2dfb2 30%, #e6c58b 100%);
+    }
+    .sun { position:absolute; width:78px; height:78px; border-radius:50%; background:#ffe99b; top:28px; right:13%; box-shadow:0 0 45px #fff3a8; }
+    .cloud { position:absolute; top:48px; left:20%; width:110px; height:28px; background:#fff9; border-radius:30px; filter:blur(.3px); }
+    .cloud:before,.cloud:after { content:""; position:absolute; background:inherit; border-radius:50%; }
+    .cloud:before { width:42px;height:42px;left:18px;top:-18px; }
+    .cloud:after { width:52px;height:48px;right:14px;top:-23px; }
+    .ocean { position:absolute; top:17%; left:0; width:100%; height:17%; background:repeating-linear-gradient(175deg,#63c4d8 0 8px,#83d7df 9px 17px,#a5e4e3 18px 25px); opacity:.8; clip-path:polygon(0 15%,12% 9%,25% 18%,39% 8%,54% 17%,68% 8%,83% 16%,100% 8%,100% 100%,0 100%); }
+    .shoreline { position:absolute; top:31%; width:100%; height:12%; background:#f7e7bd; clip-path:polygon(0 18%,18% 4%,34% 19%,52% 3%,69% 17%,85% 5%,100% 18%,100% 100%,0 100%); }
+    .sand { position:absolute; inset:39% 0 0; background:
+      radial-gradient(ellipse at 10% 30%,#c89e6530 0 2px,transparent 3px),
+      radial-gradient(ellipse at 60% 70%,#b88b5730 0 2px,transparent 3px),
+      radial-gradient(ellipse at 85% 25%,#fff8d640 0 2px,transparent 3px),
+      linear-gradient(135deg,#efd49c,#e8c58a 55%,#f0d8a7); background-size:120px 90px,150px 110px,100px 80px,auto; }
+    .hint {
+      position: relative; z-index: 2; width: fit-content; margin: 10px auto 0;
+      background:#ffffffd9; border-radius:30px; padding:9px 18px; font-size:14px;
+      box-shadow:0 3px 12px #315b5420; text-align:center;
+    }
+    #trash-field { position:absolute; inset: 40% 0 0; z-index:3; }
+    .trash {
+      position:absolute; display:grid; place-items:center; border:0; padding:0;
+      background:transparent; cursor:pointer; line-height:1;
+      filter: drop-shadow(2px 4px 2px #6b4b2838);
+      transition: transform .16s ease, opacity .2s ease, filter .16s ease;
+      user-select:none; -webkit-tap-highlight-color:transparent;
+    }
+    .trash:hover { transform:scale(1.22) rotate(0deg) !important; filter:drop-shadow(2px 7px 4px #60401d70); z-index:4; }
+    .trash:focus-visible { outline:3px solid #087c9a; outline-offset:4px; border-radius:8px; }
+    .trash.picked { opacity:0; transform:scale(.2) rotate(25deg) !important; pointer-events:none; }
+    .legend {
+      position:absolute; z-index:4; bottom:12px; left:50%; transform:translateX(-50%);
+      background:#ffffffd9; border-radius:14px; padding:8px 13px; font-size:12px;
+      color:#45616a; text-align:center; width:max-content; max-width:94%;
+    }
+    .overlay {
+      display:none; position:fixed; inset:0; z-index:10; background:#123747aa;
+      align-items:center; justify-content:center; padding:20px;
+    }
+    .overlay.show { display:flex; }
+    .dialog { background:#fffdf5; border-radius:24px; padding:32px 26px; text-align:center; max-width:420px; width:100%; box-shadow:0 15px 50px #102f3b55; }
+    .dialog h2 { color:#087b68; font-size:32px; margin:0 0 10px; }
+    .dialog p { line-height:1.7; color:#45616a; }
+    .dialog button { border:0; border-radius:30px; background:#078b78; color:white; padding:12px 24px; font-size:16px; font-weight:800; cursor:pointer; }
+    @media(max-width:600px) {
+      header { padding:16px 14px; flex-direction:column; }
+      .scoreboard { align-self:flex-end; padding:8px 12px; }
+      .game-area { min-height:calc(100vh - 145px); }
+      .hint { font-size:12px; max-width:92%; }
+      .legend { font-size:10px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <div class="student-info">D1124242031 林哲瑋</div>
+      <h1>SDGs 不塑永續-淨灘</h1>
+      <div class="subtitle">一起減少海洋垃圾，守護美麗海岸！</div>
+    </div>
+    <div class="scoreboard" aria-live="polite">
+      <div>目前積分 <span id="score">0</span></div>
+      <div>已撿拾 <span id="count">0</span> / 50</div>
+    </div>
+  </header>
+
+  <main class="game-area">
+    <div class="sun"></div><div class="cloud"></div><div class="ocean"></div><div class="shoreline"></div><div class="sand"></div>
+    <div class="hint">🧤 點擊海灘上的垃圾，把它們撿起來！不同垃圾有不同分數。</div>
+    <div id="trash-field" aria-label="海灘垃圾遊戲區"></div>
+    <div class="legend">♻️ 小型垃圾 10 分　中型垃圾 20 分　大型垃圾 30 分</div>
+  </main>
+
+  <div class="overlay" id="success">
+    <div class="dialog">
+      <h2>🎉 任務成功！</h2>
+      <p>太棒了！你已經清理完海灘上的 50 件垃圾。<br>本次總得分：<strong id="final-score">0</strong> 分</p>
+      <button id="restart">再玩一次</button>
+    </div>
+  </div>
+
+  <script>
+    const trashTypes = [
+      { name: "保特瓶", icon: "🧴", size: "small", points: 10 },
+      { name: "紙類", icon: "📄", size: "small", points: 10 },
+      { name: "塑膠袋", icon: "🛍️", size: "small", points: 10 },
+      { name: "飲料杯", icon: "🥤", size: "medium", points: 20 },
+      { name: "餐盒", icon: "🥡", size: "medium", points: 20 },
+      { name: "保麗龍", icon: "🧊", size: "medium", points: 20 },
+      { name: "漂流木", icon: "🪵", size: "large", points: 30 },
+      { name: "大型漂流垃圾", icon: "🛞", size: "large", points: 30 },
+      { name: "破損漁網", icon: "🕸️", size: "large", points: 30 }
+    ];
+    const field = document.getElementById("trash-field");
+    const scoreEl = document.getElementById("score");
+    const countEl = document.getElementById("count");
+    const success = document.getElementById("success");
+    let score = 0, picked = 0;
+
+    function startGame() {
+      score = 0; picked = 0;
+      scoreEl.textContent = "0";
+      countEl.textContent = "0";
+      field.innerHTML = "";
+      success.classList.remove("show");
+
+      // 使用網格分區後再隨機偏移，確保 50 件垃圾分散在整片下半部。
+      const cols = 10, rows = 5;
+      const cells = [];
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) cells.push({r, c});
+      }
+      for (let i = cells.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [cells[i], cells[j]] = [cells[j], cells[i]];
+      }
+
+      for (let i = 0; i < 50; i++) {
+        const item = trashTypes[Math.floor(Math.random() * trashTypes.length)];
+        const cell = cells[i];
+        const x = (cell.c + 0.18 + Math.random() * 0.64) / cols * 100;
+        const y = (cell.r + 0.16 + Math.random() * 0.66) / rows * 100;
+        const button = document.createElement("button");
+        button.className = "trash";
+        button.type = "button";
+        button.textContent = item.icon;
+        button.title = `${item.name}：${item.points} 分`;
+        button.setAttribute("aria-label", `撿起${item.name}，可得${item.points}分`);
+        const size = item.size === "small" ? 27 : item.size === "medium" ? 38 : 49;
+        button.style.left = `${x}%`;
+        button.style.top = `${y}%`;
+        button.style.fontSize = `${size}px`;
+        button.style.width = `${size + 8}px`;
+        button.style.height = `${size + 8}px`;
+        button.style.transform = `rotate(${Math.floor(Math.random() * 121) - 60}deg)`;
+        button.addEventListener("click", () => {
+          if (button.classList.contains("picked")) return;
+          score += item.points;
+          picked += 1;
+          scoreEl.textContent = score;
+          countEl.textContent = picked;
+          button.classList.add("picked");
+          if (picked === 50) {
+            document.getElementById("final-score").textContent = score;
+            setTimeout(() => success.classList.add("show"), 250);
+          }
+        });
+        field.appendChild(button);
+      }
+    }
+    document.getElementById("restart").addEventListener("click", startGame);
+    startGame();
+  </script>
+</body>
+</html>
