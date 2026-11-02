@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SDGs 性別平權</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:"Microsoft JhengHei",sans-serif;color:#294536;background:#dcebbd}
+header{display:flex;justify-content:space-between;align-items:center;padding:16px 26px;background:#fffdf1;box-shadow:0 3px 12px #3453}
+h1{margin:0;color:#315d45;font-size:clamp(25px,4vw,38px);font-weight:900}.sub{font-size:13px;color:#66816a;margin-top:4px}
+.score{background:#e4f1df;border:2px solid #c5dfbd;border-radius:15px;padding:10px 16px;font-weight:bold;white-space:nowrap}.score b{font-size:24px;color:#d27a28}
+main{position:relative;min-height:calc(100vh - 82px);overflow:hidden;background:linear-gradient(#bce5ef 0 25%,#dcebbd 25% 100%)}
+.sun{position:absolute;right:10%;top:30px;width:75px;height:75px;border-radius:50%;background:#ffe58b;box-shadow:0 0 35px #ffe58b}
+.hill{position:absolute;bottom:0;width:100%;height:65%;background:#a9ce83;clip-path:polygon(0 24%,14% 9%,29% 25%,46% 4%,61% 24%,80% 7%,100% 25%,100% 100%,0 100%)}
+.path{position:absolute;left:30%;top:35%;width:43%;height:70%;background:#e8d2a1;border:8px solid #d4bd8d;border-radius:50%;transform:rotate(-10deg)}
+.vtitle{position:relative;text-align:center;padding:20px 8px 0;color:#42674b;font-weight:bold}
+#village{position:relative;max-width:1050px;height:calc(100vh - 175px);min-height:470px;margin:auto;z-index:1}
+.hut{position:absolute;width:112px;height:115px;border:0;background:none;cursor:pointer;transform:translate(-50%,-50%);filter:drop-shadow(2px 5px 3px #455b3540)}
+.hut:hover{transform:translate(-50%,-50%) scale(1.1)}.roof{position:absolute;left:4px;top:4px;width:104px;height:57px;background:linear-gradient(145deg,#b77b3e,#80502d);clip-path:polygon(50% 0,100% 100%,0 100%)}
+.walls{position:absolute;left:19px;top:49px;width:74px;height:57px;background:#e7ca8c;border:3px solid #9c7042}.door{position:absolute;left:43px;top:72px;width:26px;height:34px;background:#765039;border-radius:12px 12px 0 0}.window{position:absolute;left:23px;top:62px;width:16px;height:15px;background:#b8e4e8;border:2px solid #8b6743}
+.number{position:absolute;top:107px;left:50%;transform:translateX(-50%);background:#fffdf0;border-radius:12px;padding:2px 8px;font-size:12px;font-weight:bold;white-space:nowrap}
+.hut.done{opacity:.5;filter:grayscale(1);cursor:default}.hut.done:after{content:"✓";position:absolute;right:0;top:0;background:#3f9460;color:white;border-radius:50%;width:25px;height:25px;display:grid;place-items:center}
+.instruction{position:relative;text-align:center;margin:0 auto 15px;padding:9px 16px;width:max-content;max-width:94%;background:#fffdf0df;border-radius:20px;font-size:14px;z-index:1}
+.modal{display:none;position:fixed;inset:0;background:#1c342dcc;z-index:5;align-items:center;justify-content:center;padding:18px}.modal.show{display:flex}
+.panel{background:#fffdf4;width:min(540px,100%);padding:25px;border-radius:22px;box-shadow:0 15px 45px #172d2855}.panel h2{margin:0 0 8px;color:#315d45}
+.question{font-size:18px;font-weight:bold;line-height:1.6;margin:14px 0}.answers{display:grid;gap:10px}
+.answer{padding:12px;text-align:left;border:2px solid #d6e3cd;border-radius:12px;background:white;font-size:15px;cursor:pointer;color:#30463b}
+.answer:disabled{cursor:default}.answer.correct{background:#e1f4df;border-color:#4d9b5a}.answer.wrong{background:#fbe5df;border-color:#cf755e}
+.feedback{min-height:26px;margin:12px 0;color:#426d48;font-weight:bold}.primary{border:0;border-radius:25px;padding:12px 22px;background:#397b50;color:white;font-size:16px;font-weight:bold;cursor:pointer}.primary:disabled{opacity:.45}
+.result{text-align:center}.big{font-size:54px}
+@media(max-width:600px){header{padding:13px;align-items:flex-start}.score{padding:8px;font-size:13px}.score b{font-size:20px}#village{height:calc(100vh - 190px);min-height:470px}.hut{transform:translate(-50%,-50%) scale(.78)}.hut:hover{transform:translate(-50%,-50%) scale(.85)}}
+</style></head>
+<body>
+<header><div><h1>SDGs 性別平權</h1><div class="sub">尊重每個人，讓機會不受性別限制</div></div><div class="score">答對題數 <b id="score">0</b> / 10</div></header>
+<main><div class="sun"></div><div class="hill"></div><div class="path"></div><div class="vtitle">🌿 性別平權村莊｜點擊茅草屋回答問題</div><section id="village"></section><div class="instruction">🏡 每間茅草屋藏著一道題目，完成 10 題挑戰吧！</div></main>
+<div class="modal" id="quizModal"><div class="panel"><h2 id="questionTitle"></h2><div class="question" id="questionText"></div><div class="answers" id="answers"></div><div class="feedback" id="feedback" aria-live="polite"></div><button class="primary" id="continueBtn" disabled>回答並繼續</button></div></div>
+<div class="modal" id="resultModal"><div class="panel result"><div class="big" id="resultIcon">🎉</div><h2 id="resultTitle"></h2><p id="resultText"></p><button class="primary" id="resultButton"></button></div></div>
+<script>
+const questions=[
+["下列哪一項最符合「性別平權」的精神？",["只有男生可以擔任領導者","每個人都應有平等的機會與權利","女生只能選擇特定工作","依照性別決定每個人的能力"],1],
+["在選擇職業時，最重要的考量應該是什麼？",["自己的興趣、能力與意願","職業適合哪一種性別","別人認為男生或女生該做什麼","只看性別決定工作"],0],
+["家務工作應該由誰負責？",["只能由媽媽負責","只能由爸爸負責","家庭成員可以依能力與時間共同分擔","家務不需要任何人做"],2],
+["在學校分組或選班級幹部時，應該怎麼做？",["男生優先當隊長","女生不能參加某些活動","依照能力、意願公平選擇","只讓特定性別參加"],2],
+["看到同學因性別被嘲笑或排擠，應該怎麼做？",["跟著一起嘲笑","假裝沒看到","尊重對方並適時協助、向師長反映","認為這只是玩笑"],2],
+["「男生不能哭」這句話有什麼問題？",["限制情緒表達，帶有性別刻板印象","能讓男生更勇敢","是每個人都必須遵守的規定","可以判斷一個人的能力"],0],
+["企業招聘員工時，應該以什麼作為主要標準？",["性別","外表是否符合性別印象","工作能力與職務需求","是否符合傳統性別角色"],2],
+["性別平權是否代表每個人都必須做一樣的事？",["是，所有人都要完全相同","不是，每個人都能公平選擇並獲得尊重","只有特定性別需要平權","平權代表不能有任何差異"],1],
+["下列哪個行為有助於建立友善、平等的環境？",["用性別限制社團資格","尊重不同性別者的想法與選擇","用性別替別人貼標籤","認為某些工作只適合男生"],1],
+["聯合國 SDGs 第 5 項主要關注什麼？",["消除飢餓","優質教育","性別平等","保育海洋生態"],2]
+];
+const positions=[[13,25],[34,20],[57,25],[83,24],[23,57],[47,53],[72,57],[12,82],[39,82],[83,82]];
+const village=document.getElementById("village");let score=0,answered=0,current=-1,selected=false;
+function build(){positions.forEach(([x,y],i)=>{let h=document.createElement("button");h.className="hut";h.style.left=x+"%";h.style.top=y+"%";h.setAttribute("aria-label","第"+(i+1)+"題茅草屋");h.innerHTML='<span class="roof"></span><span class="walls"></span><span class="window"></span><span class="door"></span><span class="number">第 '+(i+1)+' 題</span>';h.onclick=()=>openQ(i,h);village.appendChild(h)})}
+function openQ(i){let h=village.children[i];if(h.classList.contains("done"))return;current=i;selected=false;document.getElementById("questionTitle").textContent="第 "+(i+1)+" 題";document.getElementById("questionText").textContent=questions[i][0];document.getElementById("feedback").textContent="";let box=document.getElementById("answers");box.innerHTML="";document.getElementById("continueBtn").disabled=true;questions[i][1].forEach((a,n)=>{let b=document.createElement("button");b.className="answer";b.textContent=String.fromCharCode(65+n)+". "+a;b.onclick=()=>choose(n,b);box.appendChild(b)});document.getElementById("quizModal").classList.add("show")}
+function choose(n,btn){if(selected)return;selected=true;let correct=questions[current][2];[...document.querySelectorAll(".answer")].forEach((b,i)=>{b.disabled=true;if(i===correct)b.classList.add("correct")});if(n===correct){score++;document.getElementById("score").textContent=score;document.getElementById("feedback").textContent="答對了！太棒了！"}else{btn.classList.add("wrong");document.getElementById("feedback").textContent="再接再厲！綠色選項是正確答案。"}document.getElementById("continueBtn").disabled=false}
+document.getElementById("continueBtn").onclick=()=>{if(!selected)return;village.children[current].classList.add("done");village.children[current].disabled=true;answered++;document.getElementById("quizModal").classList.remove("show");if(answered===10)result()};
+function result(){let pass=score>=8;document.getElementById("resultIcon").textContent=pass?"🎉":"💪";document.getElementById("resultTitle").textContent=pass?"挑戰成功！":"再接再厲！";document.getElementById("resultText").innerHTML="10 題已全部完成，你答對 <b>"+score+"</b> 題。<br>"+(pass?"恭喜達成 8 題以上！":"答對題數未滿 8 題，別氣餒！重新挑戰一次，學習性別平權觀念。");let b=document.getElementById("resultButton");b.textContent=pass?"前往下一關":"重新挑戰";b.onclick=()=>{if(pass)location.href="level2.html";else location.reload()};document.getElementById("resultModal").classList.add("show")}
+build();
+</script></body></html>
